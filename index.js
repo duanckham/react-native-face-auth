@@ -187,7 +187,14 @@ class FaceAuth {
                 return new Error('STRANGER');
             }
 
-            return identifyResponse;
+            let personID = identifyResponse.data[0].candidates[0].personId;
+            let readPersonResponse = await this.readPerson(personGroupID, personID);
+
+            if (readPersonResponse.status !== 200) {
+                return readPersonResponse;
+            }
+
+            return readPersonResponse.data;
         } catch(error) {
             return error;
         }
