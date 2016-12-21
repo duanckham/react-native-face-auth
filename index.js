@@ -74,6 +74,28 @@ class FaceAuth {
         }
     };
 
+    async readPerson(personGroupID, personID) {
+        let headers = {
+            'Ocp-Apim-Subscription-Key': this.microsoftAPIKey
+        };
+
+        try {
+            let response = await RNFetchBlob.fetch('GET', `${this.microsoftAPIProxy}/face/v1.0/persongroups/${personGroupID}/persons/${personID}`, headers);
+            let responseJson = await response.json();
+            let result = {
+                status: response.respInfo.status,
+                data: {
+                    personID: responseJson.personId,
+                    name: responseJson.name
+                }
+            };
+
+            return result;
+        } catch (error) {
+            return error;
+        }
+    };
+
     async detect(picture) {
         let headers = {
             'Ocp-Apim-Subscription-Key': this.microsoftAPIKey,
