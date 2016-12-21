@@ -1,8 +1,9 @@
 import RNFetchBlob from 'react-native-fetch-blob';
 
 class FaceAuth {
-    constructor(microsoftAPIKey) {
+    constructor(microsoftAPIKey, microsoftAPIProxy = 'https://api.projectoxford.ai') {
         this.microsoftAPIKey = microsoftAPIKey;
+        this.microsoftAPIProxy = microsoftAPIProxy;
     };
 
     async createPersonGroup(personGroupID, personGroupName) {
@@ -16,7 +17,7 @@ class FaceAuth {
         };
 
         try {
-            let response = await RNFetchBlob.fetch('PUT', `https://api.projectoxford.ai/face/v1.0/persongroups/${personGroupID}`, headers, body);
+            let response = await RNFetchBlob.fetch('PUT', `${this.microsoftAPIProxy}/face/v1.0/persongroups/${personGroupID}`, headers, body);
             let responseJson = await response.json();
             let result = {
                 status: response.respInfo.status,
@@ -40,7 +41,7 @@ class FaceAuth {
         };
 
         try {
-            let response = await RNFetchBlob.fetch('POST', `https://api.projectoxford.ai/face/v1.0/persongroups/${personGroupID}/persons`, headers, body);
+            let response = await RNFetchBlob.fetch('POST', `${this.microsoftAPIProxy}/face/v1.0/persongroups/${personGroupID}/persons`, headers, body);
             let responseJson = await response.json();
             let result = {
                 status: response.respInfo.status,
@@ -54,17 +55,13 @@ class FaceAuth {
     };
 
     async createPersonFace(personGroupID, personID, picture) {
-        let body = JSON.stringify({
-            name: personName
-        });
-
         let headers = {
             'Ocp-Apim-Subscription-Key': this.microsoftAPIKey,
-            'Content-Type': 'application/json'
+            'Content-Type': 'application/octet-stream'
         };
 
         try {
-            let response = await RNFetchBlob.fetch('POST', `https://api.projectoxford.ai/face/v1.0/persongroups/${personGroupID}/persons/${personID}/persistedFaces`, headers, body);
+            let response = await RNFetchBlob.fetch('POST', `${this.microsoftAPIProxy}/face/v1.0/persongroups/${personGroupID}/persons/${personID}/persistedFaces`, headers, picture);
             let responseJson = await response.json();
             let result = {
                 status: response.respInfo.status,
@@ -84,7 +81,7 @@ class FaceAuth {
         };
 
         try {
-            let response = await RNFetchBlob.fetch('POST', `https://api.projectoxford.ai/face/v1.0/detect`, headers, picture);
+            let response = await RNFetchBlob.fetch('POST', `${this.microsoftAPIProxy}/face/v1.0/detect`, headers, picture);
             let responseJson = await response.json();
             let result = {
                 status: response.respInfo.status,
@@ -111,7 +108,7 @@ class FaceAuth {
         };
 
         try {
-            let response = await RNFetchBlob.fetch('POST', `https://api.projectoxford.ai/face/v1.0/identify`, headers, body);
+            let response = await RNFetchBlob.fetch('POST', `${this.microsoftAPIProxy}/face/v1.0/identify`, headers, body);
             let responseJson = await response.json();
             let result = {
                 status: response.respInfo.status,
@@ -130,7 +127,7 @@ class FaceAuth {
         };
 
         try {
-            let response = await RNFetchBlob.fetch('PUT', `https://api.projectoxford.ai/face/v1.0/persongroups/${personGroupID}/train`, headers);
+            let response = await RNFetchBlob.fetch('PUT', `${this.microsoftAPIProxy}/face/v1.0/persongroups/${personGroupID}/train`, headers);
             let result = {
                 status: response.respInfo.status
             };
@@ -189,12 +186,14 @@ class FaceAuth {
         }
 
         // Train the persons group.
-        await this.train(personGroupID);
+        let trainResponse = await this.train(personGroupID);
 
-        return {
-            personID: createPersonFaceResponse.persistedFaceId,
+        let result = {
+            personID: personID,
             personName: personName
         };
+
+        return result;
     };
 };
 
